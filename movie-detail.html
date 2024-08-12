@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>영화 상세 정보</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .hero-section {
+            background-color: #343a40;
+            color: #ffffff;
+        }
+
+        .trailer-video {
+            width: 100%;
+            height: 315px;
+        }
+
+        .cast-list {
+            margin-top: 1rem;
+        }
+
+        .cast-item {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .cast-item img {
+            border-radius: 50%;
+            margin-right: 10px;
+            width: 50px;
+            height: 75px;
+            object-fit: cover;
+        }
+
+        .recommendations .card {
+            margin-bottom: 1rem;
+        }
+
+        .recommendations img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="index.html">Movie Root</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" href="good.html">인기순</a>
+                <a class="nav-item nav-link" href="new.html">최신순</a>
+                <a class="nav-item nav-link" href="genre.html">장르별</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section text-center py-5">
+        <h1 class="display-4">영화 상세 정보</h1>
+    </div>
+
+    <div class="container my-4">
+        <div class="row" id="movie-detail">
+            <!-- 영화 상세 정보와 예고편, 출연진 정보가 여기에 표시됩니다 -->
+        </div>
+        <div class="row my-4" id="recommendations">
+            <!-- 추천 영화 목록이 여기에 표시됩니다 -->
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('id');
+            const apiKey = '41b8d7f430c6240b738b350851b6bad4';
+
+            const loadMovieDetail = () => {
+                const movieUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=ko-KR`;
+                const videosUrl = `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${apiKey}&language=ko-KR`;
+                const creditsUrl = `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${apiKey}&language=ko-KR`;
+                const recommendationsUrl = `https://api.themoviedb.org/3/movie/${movieId}/recommendations?api_key=${apiKey}&language=ko-KR&page=1`;
+
+                // 영화 상세 정보 요청
+                $.get(movieUrl, function (data) {
+                    const title = data.title;
+                    const overview = data.overview;
+                    const releaseDate = data.release_date;
+                    const rating = data.vote_average;
+                    const posterPath = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+
+                    // 예고편 비디오 요청
+                    $.get(videosUrl, function (videoData) {
+                        const trailers = videoData.results.filter(video => video.type === 'Trailer');
+                        const trailerKey = trailers.length > 0 ? trailers[0].key : null;
+
+                        // 출연진 정보 요청
+                        $.get(creditsUrl, function (creditsData) {
+                            const cast = creditsData.cast.slice(0, 5); // 상위 5명의 출연진
+                            const castHtml = cast.map(person => {
+                                const profilePath = person.profile_path ? `https://image.tmdb.org/t/p/w500${person.profile_path}` : 'https://via.placeholder.com/50x75?text=No+Image';
+                                return `
+                                    <div class="cast-item">
+                                        <img src="${profilePath}" alt="${person.name}">
+                                        <div>${person.name} (${person.character})</div>
+                                    </div>
+                                `;
+                            }).join('');
+
+                            // 추천 영화 요청
+                            $.get(recommendationsUrl, function (recData) {
+                                const recommendations = recData.results.slice(0, 5); // 상위 5개의 추천 영화
+                                const recommendationsHtml = recommendations.map(movie => {
+                                    const moviePoster = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+                                    return `
+                                        <div class="col-md-2">
+                                            <div class="card" data-id="${movie.id}" style="cursor: pointer;">
+                                                <img src="${moviePoster}" class="card-img-top" alt="${movie.title}">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">${movie.title}</h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('');
+
+                                const movieDetailHtml = `
+                                    <div class="col-md-12">
+                                        <div class="card">
+                                            <img src="${posterPath}" class="card-img-top" alt="${title}">
+                                            <div class="card-body">
+                                                <h5 class="card-title">${title}</h5>
+                                                <p class="card-text">${overview}</p>
+                                                <p class="card-text"><strong>개봉일:</strong> ${releaseDate}</p>
+                                                <p class="card-text"><strong>평점:</strong> ${rating}</p>
+                                                ${trailerKey ? `
+                                                    <div class="my-4">
+                                                        <h5>예고편:</h5>
+                                                        <iframe class="trailer-video" src="https://www.youtube.com/embed/${trailerKey}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                                    </div>
+                                                ` : '<p>예고편이 없습니다.</p>'}
+                                                ${castHtml ? `<div class="cast-list"><h5>출연진:</h5>${castHtml}</div>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+
+                                $('#movie-detail').html(movieDetailHtml);
+                                $('#recommendations').html(`
+                                    <div class="col-md-12">
+                                        <h4>추천 영화:</h4>
+                                        <div class="row">${recommendationsHtml}</div>
+                                    </div>
+                                `);
+
+                                // 추천 영화 클릭 이벤트 처리
+                                $('.recommendations .card').on('click', function () {
+                                    const recommendedMovieId = $(this).data('id');
+                                    if (recommendedMovieId) {
+                                        window.location.href = `movie-detail.html?id=${recommendedMovieId}`;
+                                    }
+                                });
+                            });
+                        });
+                    });
+                });
+            };
+
+            loadMovieDetail();
+        });
+    </script>
+</body>
+
+</html>

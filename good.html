@@ -1,21 +1,27 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <title>Movie Root</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         .hero-section {
-            background-color: #343a40; /* 어두운 배경색 */
-            color: #ffffff; /* 글씨 색상 */
+            background-color: #343a40;
+            color: #ffffff;
+        }
+
+        .card-img-top {
+            cursor: pointer;
         }
     </style>
 </head>
-<body>
 
+<body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="index.html">Movie Root</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
@@ -31,111 +37,86 @@
         <h1 class="display-4">Movie Root</h1>
     </div>
 
-    
-    
-
-    
-</div>
-<div class="container my-4">
-    
-    <br>
-    <div class="row" id="movies-container">
-        <!-- 검색된 영화 목록이 여기에 표시됩니다 -->
+    <div class="container my-4">
+        <div class="row" id="movies-container">
+            <!-- 검색된 영화 목록이 여기에 표시됩니다 -->
+        </div>
+        <div class="mt-4 d-flex justify-content-center">
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item"><a class="page-link" href="#" id="prev">이전</a></li>
+                    <li class="page-item"><a class="page-link" href="#" id="next">다음</a></li>
+                </ul>
+            </nav>
+        </div>
     </div>
-    <div class="mt-4 d-flex justify-content-center">
-        <nav>
-            <ul class="pagination">
-                <li class="page-item"><a class="page-link" href="#" id="prev">이전</a></li>
-                <li class="page-item"><a class="page-link" href="#" id="next">다음</a></li>
-            </ul>
-        </nav>
-    </div>
-    
-</div>
 
-    <div class="container">
-    <div class="row" id="movie-container">
-        <!-- 영화 정보 표시 -->
-    </div>
-</div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.2/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let currentPage = 1;
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.2/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.min.js"></script>
-<script>
-$(document).ready(function() {
-    let currentPage = 1;
+            // 평점이 높은 인기 영화를 불러오는 함수
+            const loadTopRatedPopularMovies = (page) => {
+                const apiKey = '41b8d7f430c6240b738b350851b6bad4';
+                const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=ko-KR&sort_by=vote_average.desc,popularity.desc&include_adult=false&vote_count.gte=5000&page=${page}`;
 
-    // 인기도가 높은 영화를 불러오는 함수
-    const loadPopularMovies = (page) => {
-        const apiKey = '41b8d7f430c6240b738b350851b6bad4';
-        // sort_by=popularity.desc를 추가하여 인기도가 높은 순으로 정렬
-        const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=ko-KR&sort_by=popularity.desc&include_adult=false&page=${page}`;
+                $.get(url, function (data) {
+                    const movies = data.results.slice(0, 9);
+                    let moviesHtml = '';
 
-        $.get(url, function(data) {
-            const movies = data.results.slice(0, 9);
-            let moviesHtml = '';
-            
-            movies.forEach(movie => {
-                if (movie.vote_average > 0) { // 평점이 0보다 큰 영화만 표시
-                    const title = movie.title;
-                    const overview = movie.overview;
-                    const rating = movie.vote_average;
-                    const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '이미지가 없습니다.';
-                    
-                    moviesHtml += `
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <img src="${posterPath}" class="card-img-top" alt="${title}">
-                                <div class="card-body">
-                                    <h5 class="card-title">${title}</h5>
-                                    <p class="card-text">${overview}</p>
-                                    <p class="card-text"><small class="text-muted">평점: ${rating}</small></p>
+                    movies.forEach(movie => {
+                        const title = movie.title;
+                        const overview = movie.overview;
+                        const rating = movie.vote_average;
+                        const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+                        const movieId = movie.id;
+
+                        moviesHtml += `
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100">
+                                    <a href="movie-detail.html?id=${movieId}">
+                                        <img src="${posterPath}" class="card-img-top" alt="${title}">
+                                    </a>
+                                    <div class="card-body">
+                                        <h5 class="card-title">${title}</h5>
+                                        <p class="card-text">${overview}</p>
+                                        <p class="card-text"><small class="text-muted">평점: ${rating}</small></p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    });
+
+                    if (moviesHtml === '') {
+                        $('#movies-container').html('<div class="col-12"><p>인기 영화가 없습니다.</p></div>');
+                    } else {
+                        $('#movies-container').html(moviesHtml);
+                    }
+                });
+            };
+
+            loadTopRatedPopularMovies(currentPage); // 페이지 로드 시 인기 영화 불러오기
+
+            // 페이지네이션의 이전/다음 버튼 이벤트
+            $('#next').click(function (e) {
+                e.preventDefault();
+                currentPage += 1;
+                loadTopRatedPopularMovies(currentPage);
+            });
+
+            $('#prev').click(function (e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage -= 1;
+                    loadTopRatedPopularMovies(currentPage);
                 }
             });
-            
-            if (moviesHtml === '') {
-                $('#movies-container').html('<div class="col-12"><p>인기 영화가 없습니다.</p></div>');
-            } else {
-                $('#movies-container').html(moviesHtml);
-            }
         });
-    };
-
-    loadPopularMovies(currentPage); // 페이지 로드 시 인기 영화 불러오기
-
-    // 페이지네이션의 이전/다음 버튼 이벤트
-    $('#next').click(function(e) {
-        e.preventDefault();
-        currentPage += 1;
-        loadPopularMovies(currentPage);
-    });
-
-    $('#prev').click(function(e) {
-        e.preventDefault();
-        if (currentPage > 1) {
-            currentPage -= 1;
-            loadPopularMovies(currentPage);
-        }
-    });
-});
-
-// 검색 폼 제출 이벤트 리스너
-$('#search-form').submit(function(e) {
-    e.preventDefault(); // 폼 제출 기본 동작 방지
-    const query = $('#search-input').val().trim(); // 검색어 가져오기
-    if (query) {
-        searchMovies(query); // 영화 검색 함수 호출
-    }
-});
-
-
     </script>
 
-
 </body>
+
 </html>
