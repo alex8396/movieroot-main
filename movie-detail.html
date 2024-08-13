@@ -162,12 +162,7 @@
                                 `);
 
                                 // 추천 영화 클릭 이벤트 처리
-                                $('.recommendations .card').on('click', function () {
-                                    const recommendedMovieId = $(this).data('id');
-                                    if (recommendedMovieId) {
-                                        window.location.href = `movie-detail.html?id=${recommendedMovieId}`;
-                                    }
-                                });
+                                
                             });
                         });
                     });
