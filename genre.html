@@ -8,9 +8,7 @@
     <style>
         .hero-section {
             background-color: #343a40;
-            /* 어두운 배경색 */
             color: #ffffff;
-            /* 글씨 색상 */
         }
     </style>
 </head>
@@ -85,42 +83,48 @@
         $(document).ready(function () {
             let page = 1; // 현재 페이지 번호
 
+            // 추천 받기 버튼 클릭 시
             $('#recommend-btn').click(function () {
-                page = 1; // 추천 받기 버튼을 누를 때마다 페이지를 1로 초기화
+                page = 1; // 페이지를 1로 초기화
                 const selectedGenre = $('#genre-select').val();
-                recommendMovies(selectedGenre, page);
+                recommendMovies(selectedGenre, page); // 영화 추천 함수 호출
             });
 
+            // 이전 버튼 클릭 시
             $('#prev').click(function (e) {
-                e.preventDefault(); // 기본 이벤트를 방지
-                if (page > 1) { // 첫 페이지보다 클 때만 이전 페이지로
+                e.preventDefault(); // 기본 이벤트 방지
+                if (page > 1) { // 페이지가 1보다 클 때만 이전 페이지로 이동
                     page--;
                     const selectedGenre = $('#genre-select').val();
-                    recommendMovies(selectedGenre, page);
+                    recommendMovies(selectedGenre, page); // 영화 추천 함수 호출
                 }
             });
 
+            // 다음 버튼 클릭 시
             $('#next').click(function (e) {
-                e.preventDefault(); // 기본 이벤트를 방지
-                page++; // 다음 페이지로
+                e.preventDefault(); // 기본 이벤트 방지
+                page++; // 다음 페이지로 이동
                 const selectedGenre = $('#genre-select').val();
-                recommendMovies(selectedGenre, page);
+                recommendMovies(selectedGenre, page); // 영화 추천 함수 호출
             });
 
+            // 영화 추천 함수
             function recommendMovies(genreId, pageNum) {
                 const apiKey = '41b8d7f430c6240b738b350851b6bad4';
                 const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=ko-KR&sort_by=popularity.desc&include_adult=false&include_video=false&page=${pageNum}&with_genres=${genreId}`;
 
+                // API 호출
                 $.get(url, function (data) {
-                    const movies = data.results.slice(0, 9);
+                    const movies = data.results.slice(0, 9); // 상위 9개의 영화만 표시
                     if (movies.length > 0) {
-                        displayMovies(movies);
+                        displayMovies(movies); // 영화 목록 표시
                     } else {
                         $('#movies-container').html('<div class="col-12"><p>추천할 영화가 없습니다.</p></div>');
                     }
                 });
             }
 
+            // 영화 목록 표시 함수
             function displayMovies(movies) {
                 let moviesHtml = '';
                 movies.forEach(movie => {
@@ -128,8 +132,9 @@
                     const overview = movie.overview;
                     const voteAverage = movie.vote_average;
                     const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/500x750';
-                    const movieId = movie.id; // 영화 ID를 추출
+                    const movieId = movie.id; // 영화 ID 추출
 
+                    // 영화 카드 HTML 생성
                     moviesHtml += `
                         <div class="col-md-4 mb-4">
                             <div class="card h-100">
@@ -145,7 +150,7 @@
                         </div>
                     `;
                 });
-                $('#movies-container').html(moviesHtml);
+                $('#movies-container').html(moviesHtml); // 영화 목록 HTML 삽입
             }
         });
     </script>
