@@ -61,7 +61,7 @@
             // 평점이 높은 인기 영화를 불러오는 함수
             const loadTopRatedPopularMovies = (page) => {
                 const apiKey = '41b8d7f430c6240b738b350851b6bad4';
-                const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=ko-KR&sort_by=vote_average.desc,popularity.desc&include_adult=false&vote_count.gte=50000&page=${page}`;
+                const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=ko-KR&sort_by=vote_average.desc,popularity.desc&include_adult=false&vote_count.gte=5000&page=${page}`;
 
                 $.get(url, function (data) {
                     const movies = data.results.slice(0, 9);
